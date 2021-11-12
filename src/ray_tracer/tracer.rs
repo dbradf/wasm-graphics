@@ -1,4 +1,4 @@
-use std::ops::Sub;
+use std::ops::{Add, Div, Mul, Sub};
 
 use crate::canvas::{Canvas, Color};
 
@@ -11,10 +11,29 @@ struct Point {
 }
 
 impl Point {
-    fn dot(&self, rhs: &Point) -> f64 {
+    pub fn new(x: f64, y: f64, z: f64) -> Self {
+        Point { x, y, z }
+    }
+
+    pub fn dot(&self, rhs: &Point) -> f64 {
         self.x * rhs.x + self.y * rhs.y + self.z * rhs.z
     }
 
+    pub fn length(&self) -> f64 {
+        (self.x * self.x + self.y * self.y + self.z * self.z).sqrt()
+    }
+}
+
+impl Add<&Point> for &Point {
+    type Output = Point;
+
+    fn add(self, rhs: &Point) -> Self::Output {
+        Point {
+            x: self.x + rhs.x,
+            y: self.y + rhs.y,
+            z: self.z + rhs.z,
+        }
+    }
 }
 
 impl Sub<&Point> for &Point {
@@ -27,6 +46,37 @@ impl Sub<&Point> for &Point {
             z: self.z - rhs.z,
         }
     }
+}
+
+impl Mul<&f64> for &Point {
+    type Output = Point;
+
+    fn mul(self, rhs: &f64) -> Self::Output {
+        Point {
+            x: self.x * rhs,
+            y: self.y * rhs,
+            z: self.z * rhs,
+        }
+    }
+}
+
+impl Div<&f64> for &Point {
+    type Output = Point;
+
+    fn div(self, rhs: &f64) -> Self::Output {
+        Point {
+            x: self.x / rhs,
+            y: self.y / rhs,
+            z: self.z / rhs,
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
+enum Light {
+    Ambient(f64),
+    Point(f64, Point),
+    Directional(f64, Point),
 }
 
 pub fn render(canvas: &mut Canvas) {
@@ -53,6 +103,11 @@ pub fn render(canvas: &mut Canvas) {
                 center: Point {x: -2.0, y: 0.0, z: 4.0},
                 color: Color {r: 0, g: 255, b: 0, a: 255},
             },
+        ],
+        lights: vec![
+            Light::Ambient(0.2),
+            Light::Point(0.6, Point::new(2.0, 1.0, 0.0)),
+            Light::Directional(0.2, Point::new(1.0, 4.0, 4.0)),
         ],
     };
 
@@ -121,6 +176,7 @@ impl Sphere {
 #[derive(Debug, Clone)]
 struct Scene {
     spheres: Vec<Sphere>,
+    lights: Vec<Light>,
 }
 
 impl Scene {
@@ -141,8 +197,40 @@ impl Scene {
         }
 
         match closest_sphere {
-            Some(sphere) => sphere.color,
+            Some(sphere) => {
+                let p = origin + &(direction * &closest_t);
+                let n = &p - &sphere.center;
+                let n = &n / &n.length();
+                &sphere.color * self.compete_lighting(&p, &n)
+            }
             None => Color::white(),
         }
+    }
+
+    fn compete_lighting(&self, point: &Point, normal: &Point) -> f64 {
+        let mut i = 0.0;
+
+        for light in &self.lights {
+            match light {
+                Light::Ambient(intensity) => i += intensity,
+                Light::Point(intensity, position) => {
+                    i += calc_light(normal, &(position - point), intensity)
+                }
+                Light::Directional(intensity, direction) => {
+                    i += calc_light(normal, direction, intensity)
+                }
+            }
+        }
+
+        i
+    }
+}
+
+fn calc_light(n: &Point, l: &Point, intensity: &f64) -> f64 {
+    let n_dot_l = n.dot(l);
+    if n_dot_l > 0.0 {
+        intensity * n_dot_l / (n.length() * l.length())
+    } else {
+        0.0
     }
 }

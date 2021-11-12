@@ -1,3 +1,5 @@
+use std::ops::Mul;
+
 use wasm_bindgen::{Clamped, JsValue};
 use web_sys::ImageData;
 
@@ -21,6 +23,30 @@ impl Color {
 
     pub fn white() -> Self {
         Self::new(255, 255, 255)
+    }
+}
+
+fn mul(lhs: u8, rhs: f64) -> u8 {
+    let product = lhs as f64 * rhs;
+    if product >= 255.0 {
+        255
+    } else if product <= 0.0 {
+        0
+    } else {
+        product as u8
+    }
+}
+
+impl Mul<f64> for &Color {
+    type Output = Color;
+
+    fn mul(self, rhs: f64) -> Self::Output {
+        Color {
+            r: mul(self.r, rhs),
+            g: mul(self.g, rhs),
+            b: mul(self.b, rhs),
+            a: self.a,
+        }
     }
 }
 
