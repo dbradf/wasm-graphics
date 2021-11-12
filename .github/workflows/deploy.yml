@@ -21,6 +21,9 @@ jobs:
       with:
         node-version: '16.x'
 
+    - name: Set up wasm-pack
+      uses: jetli/wasm-pack-action@v0.3.0
+
     - name: Build
       run: |
         npm install 
