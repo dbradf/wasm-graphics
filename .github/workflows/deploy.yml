@@ -1,0 +1,37 @@
+name: Deploy to github pages
+
+on: 
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v1
+      with:
+        python-version: '3.9'
+
+    - name: Set up Node
+      uses: actions/setup-node@v1
+      with:
+        node-version: '16.x'
+
+    - name: Build
+      run: |
+        npm install 
+        node run build
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install ghpusher
+
+    - name: 
+      run: |
+        gh-pusher --build-dir dist
+
