@@ -2,7 +2,6 @@ use std::ops::{Add, Div, Mul, Sub};
 
 use crate::canvas::{Canvas, Color};
 
-
 #[derive(Debug, Clone, Copy)]
 struct Point {
     x: f64,
@@ -88,20 +87,52 @@ pub fn render(canvas: &mut Canvas) {
 
     let scene = Scene {
         spheres: vec![
-            Sphere { 
-                radius: 1.0, 
-                center: Point {x: 0.0, y: -1.0, z: 3.0},
-                color: Color {r: 255, g: 0, b: 0, a: 255},
+            Sphere {
+                radius: 1.0,
+                center: Point {
+                    x: 0.0,
+                    y: -1.0,
+                    z: 3.0,
+                },
+                color: Color {
+                    r: 255,
+                    g: 0,
+                    b: 0,
+                    a: 255,
+                },
             },
-            Sphere { 
-                radius: 1.0, 
-                center: Point {x: 2.0, y: 0.0, z: 4.0},
-                color: Color {r: 0, g: 0, b: 255, a: 255},
+            Sphere {
+                radius: 1.0,
+                center: Point {
+                    x: 2.0,
+                    y: 0.0,
+                    z: 4.0,
+                },
+                color: Color {
+                    r: 0,
+                    g: 0,
+                    b: 255,
+                    a: 255,
+                },
             },
-            Sphere { 
-                radius: 1.0, 
-                center: Point {x: -2.0, y: 0.0, z: 4.0},
-                color: Color {r: 0, g: 255, b: 0, a: 255},
+            Sphere {
+                radius: 1.0,
+                center: Point {
+                    x: -2.0,
+                    y: 0.0,
+                    z: 4.0,
+                },
+                color: Color {
+                    r: 0,
+                    g: 255,
+                    b: 0,
+                    a: 255,
+                },
+            },
+            Sphere {
+                radius: 5000.0,
+                center: Point::new(0.0, -5001.0, 0.0),
+                color: Color::new(255, 255, 0),
             },
         ],
         lights: vec![
@@ -138,7 +169,7 @@ impl Viewport {
     fn canvas_to_viewport(&self, canvas: &Canvas, x: i32, y: i32) -> Point {
         Point {
             x: x as f64 * self.width / canvas.width as f64,
-            y: y as f64 * self.height / canvas.height as f64, 
+            y: -y as f64 * self.height / canvas.height as f64,
             z: 1.0,
         }
     }
@@ -170,8 +201,6 @@ impl Sphere {
         }
     }
 }
-
-
 
 #[derive(Debug, Clone)]
 struct Scene {

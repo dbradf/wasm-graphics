@@ -2,10 +2,10 @@ pub mod canvas;
 pub mod ray_tracer;
 mod utils;
 
+use crate::canvas::Canvas;
 use ray_tracer::tracer::render;
 use wasm_bindgen::prelude::*;
 use web_sys::CanvasRenderingContext2d;
-use crate::canvas::Canvas;
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
 // allocator.

@@ -3,7 +3,6 @@ use std::ops::Mul;
 use wasm_bindgen::{Clamped, JsValue};
 use web_sys::ImageData;
 
-
 #[derive(Debug, Clone, Copy)]
 pub struct Color {
     pub r: u8,
