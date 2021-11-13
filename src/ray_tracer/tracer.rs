@@ -47,6 +47,18 @@ impl Sub<&Point> for &Point {
     }
 }
 
+impl Sub<&Point> for f64 {
+    type Output = Point;
+
+    fn sub(self, rhs: &Point) -> Self::Output {
+        Point {
+            x: self - rhs.x,
+            y: self - rhs.y,
+            z: self - rhs.z,
+        }
+    }
+}
+
 impl Mul<f64> for &Point {
     type Output = Point;
 
@@ -125,6 +137,7 @@ pub fn render(canvas: &mut Canvas) {
                     a: 255,
                 },
                 specular: 500.0,
+                reflective: 0.2,
             },
             Sphere {
                 radius: 1.0,
@@ -140,6 +153,7 @@ pub fn render(canvas: &mut Canvas) {
                     a: 255,
                 },
                 specular: 500.0,
+                reflective: 0.3,
             },
             Sphere {
                 radius: 1.0,
@@ -155,12 +169,14 @@ pub fn render(canvas: &mut Canvas) {
                     a: 255,
                 },
                 specular: 10.0,
+                reflective: 0.4,
             },
             Sphere {
                 radius: 5000.0,
                 center: Point::new(0.0, -5001.0, 0.0),
                 color: Color::new(255, 255, 0),
                 specular: 1000.0,
+                reflective: 0.5,
             },
         ],
         lights: vec![
@@ -181,7 +197,7 @@ pub fn render(canvas: &mut Canvas) {
     for x in -half_x..half_x {
         for y in -half_y..half_y {
             let d = viewport.canvas_to_viewport(canvas, x, y);
-            let color = scene.trace_ray(&origin, &d, 1.0, f64::MAX);
+            let color = scene.trace_ray(&origin, &d, 1.0, f64::MAX, 3);
             canvas.put_pixel(x, y, &color);
         }
     }
@@ -209,6 +225,7 @@ struct Sphere {
     center: Point,
     color: Color,
     specular: f64,
+    reflective: f64,
 }
 
 impl Sphere {
@@ -238,16 +255,34 @@ struct Scene {
 }
 
 impl Scene {
-    fn trace_ray(&self, origin: &Point, direction: &Point, t_min: f64, t_max: f64) -> Color {
+    fn trace_ray(
+        &self,
+        origin: &Point,
+        direction: &Point,
+        t_min: f64,
+        t_max: f64,
+        recursive_depth: usize,
+    ) -> Color {
         let intersection = self.closest_intersection(origin, direction, t_min, t_max);
         match intersection {
             Some((sphere, closest_t)) => {
                 let p = origin + &(direction * closest_t);
                 let n = &p - &sphere.center;
                 let n = &n / &n.length();
-                &sphere.color * self.compute_lighting(&p, &n, &(-direction), sphere.specular)
+                let local_color =
+                    &sphere.color * self.compute_lighting(&p, &n, &(-direction), sphere.specular);
+
+                let r = sphere.reflective;
+                if recursive_depth <= 0 || r <= 0.0 {
+                    local_color
+                } else {
+                    let redirected = reflect_ray(&(-direction), &n);
+                    let reflected_color =
+                        self.trace_ray(&p, &redirected, 0.001, f64::MAX, recursive_depth - 1);
+                    local_color * (1.0 - r) + reflected_color * r
+                }
             }
-            None => Color::white(),
+            None => Color::black(),
         }
     }
 
@@ -320,7 +355,7 @@ impl Scene {
         };
 
         if s != -1.0 {
-            let r = &(&(2.0 * n) * n.dot(l)) - l;
+            let r = reflect_ray(l, n);
             let r_dot_v = r.dot(v);
             if r_dot_v > 0.0 {
                 i += intensity * (r_dot_v / (r.length() * v.length())).powf(s);
@@ -329,4 +364,8 @@ impl Scene {
 
         i
     }
+}
+
+fn reflect_ray(r: &Point, n: &Point) -> Point {
+    &(&(2.0 * n) * n.dot(r)) - r
 }

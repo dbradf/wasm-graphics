@@ -1,4 +1,4 @@
-use std::ops::Mul;
+use std::ops::{Add, Mul};
 
 use wasm_bindgen::{Clamped, JsValue};
 use web_sys::ImageData;
@@ -36,7 +36,33 @@ fn mul(lhs: u8, rhs: f64) -> u8 {
     }
 }
 
+impl Add<Color> for Color {
+    type Output = Color;
+
+    fn add(self, rhs: Color) -> Self::Output {
+        Color {
+            r: self.r.saturating_add(rhs.r),
+            g: self.g.saturating_add(rhs.g),
+            b: self.b.saturating_add(rhs.b),
+            a: self.a,
+        }
+    }
+}
+
 impl Mul<f64> for &Color {
+    type Output = Color;
+
+    fn mul(self, rhs: f64) -> Self::Output {
+        Color {
+            r: mul(self.r, rhs),
+            g: mul(self.g, rhs),
+            b: mul(self.b, rhs),
+            a: self.a,
+        }
+    }
+}
+
+impl Mul<f64> for Color {
     type Output = Color;
 
     fn mul(self, rhs: f64) -> Self::Output {
