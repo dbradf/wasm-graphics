@@ -239,6 +239,25 @@ struct Scene {
 
 impl Scene {
     fn trace_ray(&self, origin: &Point, direction: &Point, t_min: f64, t_max: f64) -> Color {
+        let intersection = self.closest_intersection(origin, direction, t_min, t_max);
+        match intersection {
+            Some((sphere, closest_t)) => {
+                let p = origin + &(direction * closest_t);
+                let n = &p - &sphere.center;
+                let n = &n / &n.length();
+                &sphere.color * self.compute_lighting(&p, &n, &(-direction), sphere.specular)
+            }
+            None => Color::white(),
+        }
+    }
+
+    fn closest_intersection(
+        &self,
+        origin: &Point,
+        direction: &Point,
+        t_min: f64,
+        t_max: f64,
+    ) -> Option<(&Sphere, f64)> {
         let mut closest_t = f64::MAX;
         let mut closest_sphere = None;
 
@@ -255,13 +274,8 @@ impl Scene {
         }
 
         match closest_sphere {
-            Some(sphere) => {
-                let p = origin + &(direction * closest_t);
-                let n = &p - &sphere.center;
-                let n = &n / &n.length();
-                &sphere.color * self.compute_lighting(&p, &n, &(-direction), sphere.specular)
-            }
-            None => Color::white(),
+            Some(sphere) => Some((sphere, closest_t)),
+            None => None,
         }
     }
 
@@ -272,34 +286,47 @@ impl Scene {
             match light {
                 Light::Ambient(intensity) => i += intensity,
                 Light::Point(intensity, position) => {
-                    i += calc_light(normal, &(position - point), intensity, v, s)
+                    i += self.calc_light(point, normal, &(position - point), intensity, v, s, 1.0)
                 }
                 Light::Directional(intensity, direction) => {
-                    i += calc_light(normal, direction, intensity, v, s)
+                    i += self.calc_light(point, normal, direction, intensity, v, s, f64::MAX)
                 }
             }
         }
 
         i
     }
-}
 
-fn calc_light(n: &Point, l: &Point, intensity: &f64, v: &Point, s: f64) -> f64 {
-    let mut i = 0.0;
-    let n_dot_l = n.dot(l);
-    i += if n_dot_l > 0.0 {
-        intensity * n_dot_l / (n.length() * l.length())
-    } else {
-        0.0
-    };
-
-    if s != -1.0 {
-        let r = &(&(2.0 * n) * n.dot(l)) - l;
-        let r_dot_v = r.dot(v);
-        if r_dot_v > 0.0 {
-            i += intensity * (r_dot_v / (r.length() * v.length())).powf(s);
+    fn calc_light(
+        &self,
+        p: &Point,
+        n: &Point,
+        l: &Point,
+        intensity: &f64,
+        v: &Point,
+        s: f64,
+        t_max: f64,
+    ) -> f64 {
+        let intersection = self.closest_intersection(p, l, 0.001, t_max);
+        if intersection.is_some() {
+            return 0.0;
         }
-    }
+        let mut i = 0.0;
+        let n_dot_l = n.dot(l);
+        i += if n_dot_l > 0.0 {
+            intensity * n_dot_l / (n.length() * l.length())
+        } else {
+            0.0
+        };
 
-    i
+        if s != -1.0 {
+            let r = &(&(2.0 * n) * n.dot(l)) - l;
+            let r_dot_v = r.dot(v);
+            if r_dot_v > 0.0 {
+                i += intensity * (r_dot_v / (r.length() * v.length())).powf(s);
+            }
+        }
+
+        i
+    }
 }
