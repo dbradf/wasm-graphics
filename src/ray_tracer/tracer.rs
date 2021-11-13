@@ -1,12 +1,13 @@
+use serde::Deserialize;
 use std::ops::{Add, Div, Mul, Neg, Sub};
 
 use crate::canvas::{Canvas, Color};
 
 #[derive(Debug, Clone, Copy)]
-struct Point {
-    x: f64,
-    y: f64,
-    z: f64,
+pub struct Point {
+    pub x: f64,
+    pub y: f64,
+    pub z: f64,
 }
 
 impl Point {
@@ -114,7 +115,7 @@ enum Light {
     Directional(f64, Point),
 }
 
-pub fn render(canvas: &mut Canvas) {
+pub fn render(canvas: &mut Canvas, viewport: &Viewport) {
     let origin = Point {
         x: 0.0,
         y: 0.0,
@@ -186,11 +187,6 @@ pub fn render(canvas: &mut Canvas) {
         ],
     };
 
-    let viewport = Viewport {
-        width: 1.0,
-        height: 1.0,
-    };
-
     let half_x = canvas.width / 2;
     let half_y = canvas.height / 2;
 
@@ -203,10 +199,10 @@ pub fn render(canvas: &mut Canvas) {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
-struct Viewport {
-    width: f64,
-    height: f64,
+#[derive(Debug, Clone, Copy, Deserialize)]
+pub struct Viewport {
+    pub width: f64,
+    pub height: f64,
 }
 
 impl Viewport {
@@ -220,12 +216,12 @@ impl Viewport {
 }
 
 #[derive(Debug, Clone, Copy)]
-struct Sphere {
-    radius: f64,
-    center: Point,
-    color: Color,
-    specular: f64,
-    reflective: f64,
+pub struct Sphere {
+    pub radius: f64,
+    pub center: Point,
+    pub color: Color,
+    pub specular: f64,
+    pub reflective: f64,
 }
 
 impl Sphere {
