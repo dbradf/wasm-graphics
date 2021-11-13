@@ -1,4 +1,4 @@
-use std::ops::{Add, Div, Mul, Sub};
+use std::ops::{Add, Div, Mul, Neg, Sub};
 
 use crate::canvas::{Canvas, Color};
 
@@ -47,14 +47,26 @@ impl Sub<&Point> for &Point {
     }
 }
 
-impl Mul<&f64> for &Point {
+impl Mul<f64> for &Point {
     type Output = Point;
 
-    fn mul(self, rhs: &f64) -> Self::Output {
+    fn mul(self, rhs: f64) -> Self::Output {
         Point {
             x: self.x * rhs,
             y: self.y * rhs,
             z: self.z * rhs,
+        }
+    }
+}
+
+impl Mul<&Point> for f64 {
+    type Output = Point;
+
+    fn mul(self, rhs: &Point) -> Self::Output {
+        Point {
+            x: rhs.x * self,
+            y: rhs.y * self,
+            z: rhs.z * self,
         }
     }
 }
@@ -67,6 +79,18 @@ impl Div<&f64> for &Point {
             x: self.x / rhs,
             y: self.y / rhs,
             z: self.z / rhs,
+        }
+    }
+}
+
+impl Neg for &Point {
+    type Output = Point;
+
+    fn neg(self) -> Self::Output {
+        Point {
+            x: -self.x,
+            y: -self.y,
+            z: -self.z,
         }
     }
 }
@@ -100,6 +124,7 @@ pub fn render(canvas: &mut Canvas) {
                     b: 0,
                     a: 255,
                 },
+                specular: 500.0,
             },
             Sphere {
                 radius: 1.0,
@@ -114,6 +139,7 @@ pub fn render(canvas: &mut Canvas) {
                     b: 255,
                     a: 255,
                 },
+                specular: 500.0,
             },
             Sphere {
                 radius: 1.0,
@@ -128,11 +154,13 @@ pub fn render(canvas: &mut Canvas) {
                     b: 0,
                     a: 255,
                 },
+                specular: 10.0,
             },
             Sphere {
                 radius: 5000.0,
                 center: Point::new(0.0, -5001.0, 0.0),
                 color: Color::new(255, 255, 0),
+                specular: 1000.0,
             },
         ],
         lights: vec![
@@ -180,6 +208,7 @@ struct Sphere {
     radius: f64,
     center: Point,
     color: Color,
+    specular: f64,
 }
 
 impl Sphere {
@@ -227,26 +256,26 @@ impl Scene {
 
         match closest_sphere {
             Some(sphere) => {
-                let p = origin + &(direction * &closest_t);
+                let p = origin + &(direction * closest_t);
                 let n = &p - &sphere.center;
                 let n = &n / &n.length();
-                &sphere.color * self.compete_lighting(&p, &n)
+                &sphere.color * self.compute_lighting(&p, &n, &(-direction), sphere.specular)
             }
             None => Color::white(),
         }
     }
 
-    fn compete_lighting(&self, point: &Point, normal: &Point) -> f64 {
+    fn compute_lighting(&self, point: &Point, normal: &Point, v: &Point, s: f64) -> f64 {
         let mut i = 0.0;
 
         for light in &self.lights {
             match light {
                 Light::Ambient(intensity) => i += intensity,
                 Light::Point(intensity, position) => {
-                    i += calc_light(normal, &(position - point), intensity)
+                    i += calc_light(normal, &(position - point), intensity, v, s)
                 }
                 Light::Directional(intensity, direction) => {
-                    i += calc_light(normal, direction, intensity)
+                    i += calc_light(normal, direction, intensity, v, s)
                 }
             }
         }
@@ -255,11 +284,22 @@ impl Scene {
     }
 }
 
-fn calc_light(n: &Point, l: &Point, intensity: &f64) -> f64 {
+fn calc_light(n: &Point, l: &Point, intensity: &f64, v: &Point, s: f64) -> f64 {
+    let mut i = 0.0;
     let n_dot_l = n.dot(l);
-    if n_dot_l > 0.0 {
+    i += if n_dot_l > 0.0 {
         intensity * n_dot_l / (n.length() * l.length())
     } else {
         0.0
+    };
+
+    if s != -1.0 {
+        let r = &(&(2.0 * n) * n.dot(l)) - l;
+        let r_dot_v = r.dot(v);
+        if r_dot_v > 0.0 {
+            i += intensity * (r_dot_v / (r.length() * v.length())).powf(s);
+        }
     }
+
+    i
 }
