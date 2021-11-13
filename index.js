@@ -15,7 +15,7 @@
   \******************/
 /***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
 
-eval("Promise.all(/*! import() */[__webpack_require__.e(\"vendors-node_modules_text-encoding_index_js\"), __webpack_require__.e(\"pkg_index_js\")]).then(__webpack_require__.bind(__webpack_require__, /*! ./pkg */ \"./pkg/index.js\"))\n    .then(wasm => {\n        const canvas = document.getElementById('drawing');\n        const ctx = canvas.getContext('2d');\n\n        wasm.draw(ctx, 1000, 1000);\n    })\n    .catch(console.error);\n\n\n//# sourceURL=webpack:///./index.js?");
+eval("Promise.all(/*! import() */[__webpack_require__.e(\"vendors-node_modules_text-encoding_index_js\"), __webpack_require__.e(\"pkg_index_js\")]).then(__webpack_require__.bind(__webpack_require__, /*! ./pkg */ \"./pkg/index.js\"))\n    .then(wasm => {\n        const canvas = document.getElementById('drawing');\n        const ctx = canvas.getContext('2d');\n\n        const viewportWidthInput = document.getElementById(\"viewportWidth\");\n        const viewportHeightInput = document.getElementById(\"viewportHeight\");\n        const renderBtn = document.getElementById(\"render\");\n\n        const viewport = {\n            width: 1.0,\n            height: 1.0,\n        }\n\n        renderBtn.addEventListener(\"click\", () => {\n            const viewport = {\n                width: parseFloat(viewportWidthInput.value) || 1.0,\n                height: parseFloat(viewportHeightInput.value) || 1.0,\n            };\n\n            wasm.draw(ctx, 1000, 1000, viewport);\n        });\n\n        wasm.draw(ctx, 1000, 1000, viewport);\n    })\n    .catch(console.error);\n\n\n//# sourceURL=webpack:///./index.js?");
 
 /***/ })
 

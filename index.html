@@ -4,9 +4,17 @@
   <script defer src="index.js"></script></head>
   <body>
     <h1>Graphics</h1>
-    <div style="border: solid 1px">
+    <div>
+      <h1>Viewport</h1>
+      <label for="viewportHeight">Viewport Height</label>
+      <input type="number" name="viewportHeight" id="viewportHeight" value="1.0"/>
+      <label for="viewportWidth">Viewport Width</label>
+      <input type="number" name="viewportWidth" id="viewportWidth" value="1.0"/>
+      <button id="render">render</button>
+    </div>
+    <div>
       <canvas id="drawing" width="1000" height="1000"></canvas>
-      </div>
+    </div>
   </body>
 </html>
 
