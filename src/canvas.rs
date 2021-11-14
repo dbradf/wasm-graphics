@@ -1,9 +1,10 @@
 use std::ops::{Add, Mul};
 
+use serde::Deserialize;
 use wasm_bindgen::{Clamped, JsValue};
 use web_sys::ImageData;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Deserialize)]
 pub struct Color {
     pub r: u8,
     pub g: u8,

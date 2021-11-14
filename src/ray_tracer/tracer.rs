@@ -3,7 +3,7 @@ use std::ops::{Add, Div, Mul, Neg, Sub};
 
 use crate::canvas::{Canvas, Color};
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Deserialize)]
 pub struct Point {
     pub x: f64,
     pub y: f64,
@@ -108,14 +108,14 @@ impl Neg for &Point {
     }
 }
 
-#[derive(Clone, Debug)]
-enum Light {
+#[derive(Clone, Debug, Deserialize)]
+pub enum Light {
     Ambient(f64),
     Point(f64, Point),
     Directional(f64, Point),
 }
 
-pub fn render(canvas: &mut Canvas, viewport: &Viewport) {
+pub fn render(canvas: &mut Canvas, viewport: &Viewport, spheres: Vec<Sphere>) {
     let origin = Point {
         x: 0.0,
         y: 0.0,
@@ -123,63 +123,7 @@ pub fn render(canvas: &mut Canvas, viewport: &Viewport) {
     };
 
     let scene = Scene {
-        spheres: vec![
-            Sphere {
-                radius: 1.0,
-                center: Point {
-                    x: 0.0,
-                    y: -1.0,
-                    z: 3.0,
-                },
-                color: Color {
-                    r: 255,
-                    g: 0,
-                    b: 0,
-                    a: 255,
-                },
-                specular: 500.0,
-                reflective: 0.2,
-            },
-            Sphere {
-                radius: 1.0,
-                center: Point {
-                    x: 2.0,
-                    y: 0.0,
-                    z: 4.0,
-                },
-                color: Color {
-                    r: 0,
-                    g: 0,
-                    b: 255,
-                    a: 255,
-                },
-                specular: 500.0,
-                reflective: 0.3,
-            },
-            Sphere {
-                radius: 1.0,
-                center: Point {
-                    x: -2.0,
-                    y: 0.0,
-                    z: 4.0,
-                },
-                color: Color {
-                    r: 0,
-                    g: 255,
-                    b: 0,
-                    a: 255,
-                },
-                specular: 10.0,
-                reflective: 0.4,
-            },
-            Sphere {
-                radius: 5000.0,
-                center: Point::new(0.0, -5001.0, 0.0),
-                color: Color::new(255, 255, 0),
-                specular: 1000.0,
-                reflective: 0.5,
-            },
-        ],
+        spheres,
         lights: vec![
             Light::Ambient(0.2),
             Light::Point(0.6, Point::new(2.0, 1.0, 0.0)),
@@ -215,7 +159,7 @@ impl Viewport {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Deserialize)]
 pub struct Sphere {
     pub radius: f64,
     pub center: Point,
