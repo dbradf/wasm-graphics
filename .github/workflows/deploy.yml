@@ -38,6 +38,7 @@ jobs:
       run: |
         git config --global user.email "dbradf@gmail.com"
         git config --global user.name "David Bradford"
+        git reset --hard HEAD
         git fetch origin gh-pages
         gh-pusher --build-dir dist
 
