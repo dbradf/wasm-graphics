@@ -1,7 +1,6 @@
-use serde::Deserialize;
-use crate::canvas::Canvas;
 use super::{color::Color, tuple::Tuple};
-
+use crate::canvas::Canvas;
+use serde::Deserialize;
 
 #[derive(Clone, Debug, Deserialize)]
 pub enum Light {

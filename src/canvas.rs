@@ -54,7 +54,7 @@ mod tests {
     #[test]
     fn test_creating_a_canvas() {
         let c = Canvas::new(10, 20);
-        
+
         assert_eq!(c.width, 10);
         assert_eq!(c.height, 20);
     }
@@ -68,7 +68,4 @@ mod tests {
 
         assert_eq!(c.pixel_at(2, 3), red);
     }
-
-
-
 }

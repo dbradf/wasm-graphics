@@ -3,7 +3,6 @@ use serde::Deserialize;
 
 use super::util::f64_is_equal;
 
-
 #[derive(Debug, Clone, Copy, Deserialize)]
 pub struct Color {
     pub r: f64,
@@ -27,11 +26,11 @@ impl Color {
 
     pub fn as_u8_array(&self) -> [u8; 4] {
         [
-            channel_to_u8(self.r), 
-            channel_to_u8(self.g), 
-            channel_to_u8(self.b), 
+            channel_to_u8(self.r),
+            channel_to_u8(self.g),
+            channel_to_u8(self.b),
             self.a,
-            ]
+        ]
     }
 }
 
@@ -53,37 +52,37 @@ impl_op_ex!(+ |lhs: &Color, rhs: &Color| -> Color {
             a: lhs.a,
         }
 });
-impl_op_ex!(- |lhs: &Color, rhs: &Color| -> Color {
+impl_op_ex!(-|lhs: &Color, rhs: &Color| -> Color {
     Color {
-            r: lhs.r - rhs.r,
-            g: lhs.g - rhs.g,
-            b: lhs.b - rhs.b,
-            a: lhs.a,
-        }
+        r: lhs.r - rhs.r,
+        g: lhs.g - rhs.g,
+        b: lhs.b - rhs.b,
+        a: lhs.a,
+    }
 });
-impl_op_ex!(* |lhs: &Color, rhs: &Color| -> Color {
+impl_op_ex!(*|lhs: &Color, rhs: &Color| -> Color {
     Color {
-            r: lhs.r * rhs.r,
-            g: lhs.g * rhs.g,
-            b: lhs.b * rhs.b,
-            a: lhs.a,
-        }
+        r: lhs.r * rhs.r,
+        g: lhs.g * rhs.g,
+        b: lhs.b * rhs.b,
+        a: lhs.a,
+    }
 });
-impl_op_ex!(* |lhs: &Color, rhs: &f64| -> Color {
+impl_op_ex!(*|lhs: &Color, rhs: &f64| -> Color {
     Color {
-            r: lhs.r * rhs,
-            g: lhs.g * rhs,
-            b: lhs.b * rhs,
-            a: lhs.a,
-        }
+        r: lhs.r * rhs,
+        g: lhs.g * rhs,
+        b: lhs.b * rhs,
+        a: lhs.a,
+    }
 });
 
 impl PartialEq for Color {
     fn eq(&self, other: &Self) -> bool {
-        f64_is_equal(self.r, other.r) &&
-        f64_is_equal(self.g, other.g) &&
-        f64_is_equal(self.b, other.b) &&
-        self.a == other.a
+        f64_is_equal(self.r, other.r)
+            && f64_is_equal(self.g, other.g)
+            && f64_is_equal(self.b, other.b)
+            && self.a == other.a
     }
 }
 
