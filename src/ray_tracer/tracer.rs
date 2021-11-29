@@ -1,6 +1,6 @@
 use serde::Deserialize;
-use crate::canvas::{Canvas, Color};
-use super::tuple::Tuple;
+use crate::canvas::Canvas;
+use super::{color::Color, tuple::Tuple};
 
 
 #[derive(Clone, Debug, Deserialize)]

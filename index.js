@@ -65,28 +65,28 @@ import('./pkg')
             spheres.push({
                 radius: 1.0, 
                 center: { x: 0, y: -1, z: 3, w: 1.0},
-                color: { r: 255, g: 0, b: 0, a: 255 },
+                color: { r: 1, g: 0, b: 0, a: 255 },
                 specular: 500,
                 reflective: 0.2,
             }, 
             {
                 radius: 1.0, 
                 center: { x: 2, y: 0, z: 4, w: 1.0},
-                color: { r: 0, g: 0, b: 255, a: 255 },
+                color: { r: 0, g: 0, b: 1, a: 255 },
                 specular: 500,
                 reflective: 0.3,
             },
             {
                 radius: 1.0, 
                 center: { x: -2, y: 0, z: 4, w: 1.0 },
-                color: { r: 0, g: 255, b: 0, a: 255 },
+                color: { r: 0, g: 1, b: 0, a: 255 },
                 specular: 10,
                 reflective: 0.4,
             },
             {
                 radius: 5000, 
                 center: { x: 0, y: -5001, z: 0, w: 1.0 },
-                color: { r: 255, g: 255, b: 0, a: 255 },
+                color: { r: 1, g: 1, b: 0, a: 255 },
                 specular: 1000,
                 reflective: 0.5,
             });

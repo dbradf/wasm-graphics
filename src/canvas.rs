@@ -1,114 +1,74 @@
-use std::ops::{Add, Mul};
-
-use serde::Deserialize;
 use wasm_bindgen::{Clamped, JsValue};
 use web_sys::ImageData;
 
-#[derive(Debug, Clone, Copy, Deserialize)]
-pub struct Color {
-    pub r: u8,
-    pub g: u8,
-    pub b: u8,
-    pub a: u8,
-}
-
-impl Color {
-    pub fn new(r: u8, g: u8, b: u8) -> Self {
-        Color { r, g, b, a: 255 }
-    }
-
-    pub fn black() -> Self {
-        Self::new(0, 0, 0)
-    }
-
-    pub fn white() -> Self {
-        Self::new(255, 255, 255)
-    }
-}
-
-fn mul(lhs: u8, rhs: f64) -> u8 {
-    let product = lhs as f64 * rhs;
-    if product >= 255.0 {
-        255
-    } else if product <= 0.0 {
-        0
-    } else {
-        product as u8
-    }
-}
-
-impl Add<Color> for Color {
-    type Output = Color;
-
-    fn add(self, rhs: Color) -> Self::Output {
-        Color {
-            r: self.r.saturating_add(rhs.r),
-            g: self.g.saturating_add(rhs.g),
-            b: self.b.saturating_add(rhs.b),
-            a: self.a,
-        }
-    }
-}
-
-impl Mul<f64> for &Color {
-    type Output = Color;
-
-    fn mul(self, rhs: f64) -> Self::Output {
-        Color {
-            r: mul(self.r, rhs),
-            g: mul(self.g, rhs),
-            b: mul(self.b, rhs),
-            a: self.a,
-        }
-    }
-}
-
-impl Mul<f64> for Color {
-    type Output = Color;
-
-    fn mul(self, rhs: f64) -> Self::Output {
-        Color {
-            r: mul(self.r, rhs),
-            g: mul(self.g, rhs),
-            b: mul(self.b, rhs),
-            a: self.a,
-        }
-    }
-}
+use crate::ray_tracer::color::Color;
 
 #[derive(Debug, Clone)]
 pub struct Canvas {
     pub width: i32,
     pub height: i32,
-    pixels: Vec<u8>,
+    pixels: Vec<Color>,
 }
 
 impl Canvas {
     pub fn new(width: i32, height: i32) -> Self {
-        let size = width * height * 4;
+        let size = width * height;
         Self {
             width,
             height,
-            pixels: vec![0; size as usize],
+            pixels: vec![Color::white(); size as usize],
         }
     }
 
-    pub fn put_pixel(&mut self, x: i32, y: i32, color: &Color) {
+    fn index_at(&self, x: i32, y: i32) -> usize {
         let canvas_x = (self.width / 2) + x;
         let canvas_y = (self.height / 2) + y;
-        let index = ((canvas_y * self.width + canvas_x) * 4) as usize;
 
-        self.pixels[index] = color.r;
-        self.pixels[index + 1] = color.g;
-        self.pixels[index + 2] = color.b;
-        self.pixels[index + 3] = color.a;
+        (canvas_y * self.width + canvas_x) as usize
     }
 
-    pub fn draw(&mut self) -> Result<ImageData, JsValue> {
+    pub fn put_pixel(&mut self, x: i32, y: i32, color: &Color) {
+        let index = self.index_at(x, y);
+        self.pixels[index] = color.clone();
+    }
+
+    pub fn pixel_at(&self, x: i32, y: i32) -> Color {
+        let index = self.index_at(x, y);
+        self.pixels[index]
+    }
+
+    pub fn draw(&self) -> Result<ImageData, JsValue> {
+        let mut image: Vec<u8> = self.pixels.iter().flat_map(|c| c.as_u8_array()).collect();
         ImageData::new_with_u8_clamped_array_and_sh(
-            Clamped(&mut self.pixels),
+            Clamped(&mut image),
             self.width as u32,
             self.height as u32,
         )
     }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_creating_a_canvas() {
+        let c = Canvas::new(10, 20);
+        
+        assert_eq!(c.width, 10);
+        assert_eq!(c.height, 20);
+    }
+
+    #[test]
+    fn test_writing_pixels_to_a_canvas() {
+        let mut c = Canvas::new(10, 20);
+        let red = Color::new(1.0, 0.0, 0.0);
+
+        c.put_pixel(2, 3, &red);
+
+        assert_eq!(c.pixel_at(2, 3), red);
+    }
+
+
+
 }
